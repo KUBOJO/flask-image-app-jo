@@ -1,6 +1,5 @@
 flask==2.1.1
-pillow==9.2.0
-opencv-python==4.5.5.64
-numpy==1.22.0
-gunicorn==20.1.0  # Wajib untuk deploy
-opencv-python-headless==4.5.5.64  # Gunakan versi headless
+gunicorn==20.1.0
+opencv-python-headless==4.5.5.64  # Wajib pakai headless
+pillow==9.5.0
+numpy==1.24.3

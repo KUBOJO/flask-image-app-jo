@@ -1,156 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Image Processor</title>
+    <title>Image Processor</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        .dropzone {
-            border: 2px dashed #cbd5e0;
-            transition: all 0.3s ease;
-        }
-        .dropzone:hover {
-            border-color: #4299e1;
-            background-color: #f8fafc;
-        }
-        .result-card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-        }
-        .result-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        .image-preview {
+            max-height: 300px;
+            border: 2px dashed #ccc;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-12">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">Image Processing Studio</h1>
-            <p class="text-xl text-gray-600">Upload your image and apply professional effects</p>
-        </header>
-
-        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-8">
-                <form method="POST" enctype="multipart/form-data" class="space-y-6">
-                    <!-- File Upload -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Upload Image</label>
-                        <div class="dropzone rounded-lg p-8 text-center cursor-pointer" onclick="document.getElementById('fileInput').click()">
-                            <input type="file" id="fileInput" name="image" accept="image/png, image/jpeg" class="hidden" required>
-                            <div id="fileDropArea" class="space-y-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                                <p class="text-xs text-gray-500">PNG or JPG (max. 5MB)</p>
-                            </div>
-                            <div id="fileNameDisplay" class="hidden mt-2 text-sm font-medium text-gray-700"></div>
-                        </div>
-                    </div>
-
-                    <!-- Effect Selection -->
-                    <div class="space-y-2">
-                        <label for="effect" class="block text-sm font-medium text-gray-700">Select Effect</label>
-                        <select id="effect" name="effect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" required>
-                            <option value="" disabled selected>Choose an effect...</option>
-                            <option value="grayscale">Grayscale</option>
-                            <option value="blur">Blur Effect</option>
-                            <option value="rotate">Rotate 90°</option>
-                            <option value="mirror">Mirror Effect</option>
-                            <option value="face_detect">Face Detection</option>
-                        </select>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                        Process Image
-                    </button>
-                </form>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <!-- Header -->
+        <h1 class="text-2xl font-bold text-center mb-6">Image Processor</h1>
+        
+        <!-- Form Upload -->
+        <form method="post" enctype="multipart/form-data" class="mb-8">
+            <!-- File Input -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Pilih Gambar</label>
+                <input 
+                    type="file" 
+                    name="image" 
+                    accept="image/*" 
+                    class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                    required
+                >
             </div>
+            
+            <!-- Effect Selection -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Pilih Efek</label>
+                <select 
+                    name="effect" 
+                    class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                >
+                    <option value="" disabled selected>Pilih efek...</option>
+                    <option value="grayscale">Grayscale</option>
+                    <option value="blur">Blur</option>
+                    <option value="rotate">Rotate 90°</option>
+                    <option value="mirror">Mirror</option>
+                    <option value="face_detect">Face Detection</option>
+                </select>
+            </div>
+            
+            <!-- Submit Button -->
+            <button 
+                type="submit" 
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+            >
+                Proses Gambar
+            </button>
+        </form>
+
+        <!-- Error Message -->
+        {% if error %}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <p>{{ error }}</p>
         </div>
+        {% endif %}
 
         <!-- Results Section -->
-        {% if original_path or processed_path %}
-        <div class="max-w-6xl mx-auto mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="result-card bg-white rounded-xl overflow-hidden">
-                <div class="p-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Original Image</h2>
-                    <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden">
-                        <img src="{{ original_path }}" alt="Original Image" class="object-cover w-full h-full" loading="lazy">
-                    </div>
+        {% if original_path and processed_path %}
+        <div class="border-t pt-6">
+            <h2 class="text-xl font-semibold mb-4">Hasil Processing</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-medium mb-2">Original</h3>
+                    <img src="{{ original_path }}" class="image-preview rounded-md">
                 </div>
-            </div>
-            <div class="result-card bg-white rounded-xl overflow-hidden">
-                <div class="p-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Processed Image</h2>
-                    <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden">
-                        <img src="{{ processed_path }}" alt="Processed Image" class="object-cover w-full h-full" loading="lazy">
-                    </div>
+                <div>
+                    <h3 class="font-medium mb-2">Hasil</h3>
+                    <img src="{{ processed_path }}" class="image-preview rounded-md">
                 </div>
             </div>
         </div>
         {% endif %}
     </div>
-
-    <script>
-        // File input handling
-        const fileInput = document.getElementById('fileInput');
-        const fileDropArea = document.getElementById('fileDropArea');
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
-
-        fileInput.addEventListener('change', (e) => {
-            if (fileInput.files.length > 0) {
-                const fileName = fileInput.files[0].name;
-                fileDropArea.classList.add('hidden');
-                fileNameDisplay.textContent = fileName;
-                fileNameDisplay.classList.remove('hidden');
-            }
-        });
-
-        // Drag and drop functionality
-        const dropzone = document.querySelector('.dropzone');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropzone.addEventListener(eventName, highlight, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight() {
-            dropzone.classList.add('border-blue-400', 'bg-blue-50');
-        }
-
-        function unhighlight() {
-            dropzone.classList.remove('border-blue-400', 'bg-blue-50');
-        }
-
-        dropzone.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            fileInput.files = files;
-            
-            if (files.length > 0) {
-                const fileName = files[0].name;
-                fileDropArea.classList.add('hidden');
-                fileNameDisplay.textContent = fileName;
-                fileNameDisplay.classList.remove('hidden');
-            }
-        }
-    </script>
 </body>
 </html>
