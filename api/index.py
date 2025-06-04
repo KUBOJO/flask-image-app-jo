@@ -7,7 +7,7 @@ import cv2
 # Lokasi dasar file ini
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Path template dan static (relatif terhadap file ini) - DIPERBAIKI
+# Path template dan static (relatif terhadap file ini)
 TEMPLATE_FOLDER = os.path.join(BASE_DIR, '../../templates')  # Naik 2 level ke root
 STATIC_FOLDER = os.path.join(BASE_DIR, '../../static')      # Naik 2 level ke root
 
@@ -17,8 +17,9 @@ app = Flask(__name__, template_folder=TEMPLATE_FOLDER, static_folder=STATIC_FOLD
 # Konfigurasi folder upload
 UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # Batas upload 5MB
 
-# Buat folder uploads jika belum ada - DIPERBAIKI (handle error)
+# Buat folder uploads jika belum ada
 try:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 except Exception as e:
@@ -30,99 +31,103 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
 
-# Fungsi deteksi wajah - DIPERBAIKI (error handling)
+# Fungsi deteksi wajah dengan optimasi
 def deteksi_wajah(input_path, output_path):
     try:
         cascade_path = os.path.join(BASE_DIR, 'haarcascade_frontalface_default.xml')
         
-        # Cek apakah file HaarCascade ada
         if not os.path.exists(cascade_path):
-            raise FileNotFoundError("File haarcascade tidak ditemukan di path: " + cascade_path)
+            raise FileNotFoundError(f"File haarcascade tidak ditemukan di: {cascade_path}")
             
         face_cascade = cv2.CascadeClassifier(cascade_path)
         
         if face_cascade.empty():
-            raise Exception("❌ File haarcascade rusak atau tidak terbaca")
+            raise Exception("❌ Gagal memuat file haarcascade")
 
         img = cv2.imread(input_path)
         if img is None:
-            raise Exception(f"❌ Gambar tidak terbaca: {input_path}")
+            raise Exception(f"❌ Tidak dapat membaca gambar: {input_path}")
 
+        # Konversi ke grayscale untuk deteksi lebih cepat
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        
+        # Deteksi wajah dengan parameter optimal
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
+        # Gambar kotak di sekitar wajah
         for (x, y, w, h) in faces:
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         if not cv2.imwrite(output_path, img):
-            raise Exception("❌ Gagal menyimpan gambar hasil deteksi")
+            raise Exception("❌ Gagal menyimpan hasil deteksi")
             
     except Exception as e:
-        print(f"[DETEKSI ERROR] {str(e)}")
-        raise  # Re-raise error untuk ditangkap di route utama
+        print(f"[ERROR DETEKSI] {str(e)}")
+        raise
 
-# Routing utama - DIPERBAIKI (log lebih informatif)
+# Routing utama dengan error handling
 @app.route('/', methods=['GET', 'POST'])
 def index():
     original_path = None
     processed_path = None
 
     if request.method == 'POST':
-        file = request.files.get('image')
-        effect = request.form.get('effect')
-
-        if not file:
-            return "❌ Tidak ada file yang dipilih", 400
+        # Validasi file upload
+        if 'image' not in request.files:
+            return render_template('error.html', message="❌ Tidak ada file yang dipilih"), 400
             
-        if not allowed_file(file.filename):
-            return "❌ Format file tidak didukung (hanya .png, .jpg, .jpeg)", 400
+        file = request.files['image']
+        effect = request.form.get('effect', '')
+
+        if file.filename == '':
+            return render_template('error.html', message="❌ Nama file kosong"), 400
+            
+        if not (file and allowed_file(file.filename)):
+            return render_template('error.html', message="❌ Format file tidak didukung"), 400
 
         try:
+            # Proses penyimpanan file
             filename = secure_filename(file.filename)
-            original_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            original_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            processed_path = os.path.join(app.config['UPLOAD_FOLDER'], f"processed_{filename}")
             
-            # Simpan file upload
-            file.save(original_file_path)
-            print(f"✅ File disimpan: {original_file_path}")
+            file.save(original_path)
+            print(f"📁 File disimpan: {original_path}")
 
-            processed_filename = f"processed_{filename}"
-            processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
-
-            if effect in {'grayscale', 'blur', 'rotate', 'mirror'}:
-                img = Image.open(original_file_path)
-                
-                if effect == 'grayscale':
-                    processed_img = ImageOps.grayscale(img)
-                elif effect == 'blur':
-                    processed_img = img.filter(ImageFilter.GaussianBlur(4))
-                elif effect == 'rotate':
-                    processed_img = img.rotate(90)
-                elif effect == 'mirror':
-                    processed_img = ImageOps.mirror(img)
-                    
-                processed_img.save(processed_file_path)
-                print(f"✅ Efek {effect} berhasil diproses")
-
+            # Proses efek gambar
+            if effect == 'grayscale':
+                img = Image.open(original_path)
+                ImageOps.grayscale(img).save(processed_path)
+            elif effect == 'blur':
+                img = Image.open(original_path)
+                img.filter(ImageFilter.GaussianBlur(5)).save(processed_path)
+            elif effect == 'rotate':
+                img = Image.open(original_path)
+                img.rotate(90, expand=True).save(processed_path)
+            elif effect == 'mirror':
+                img = Image.open(original_path)
+                ImageOps.mirror(img).save(processed_path)
             elif effect == 'face_detect':
-                deteksi_wajah(original_file_path, processed_file_path)
-                print("✅ Deteksi wajah berhasil")
-                
+                deteksi_wajah(original_path, processed_path)
             else:
-                return "❌ Efek tidak valid", 400
+                return render_template('error.html', message="❌ Efek tidak valid"), 400
 
-            # Generate URL untuk template
-            original_path = url_for('static', filename=f'uploads/{filename}')
-            processed_path = url_for('static', filename=f'uploads/{processed_filename}')
+            # Generate URL untuk ditampilkan
+            original_url = url_for('static', filename=f'uploads/{filename}')
+            processed_url = url_for('static', filename=f'uploads/processed_{filename}')
+            
+            return render_template('result.html', 
+                               original=original_url, 
+                               processed=processed_url,
+                               effect=effect)
 
         except Exception as e:
-            print(f"[ROUTE ERROR] {str(e)}")
-            return f"❌ Gagal memproses: {str(e)}", 500
+            print(f"🔥 Error: {str(e)}")
+            return render_template('error.html', message=f"❌ Gagal memproses: {str(e)}"), 500
 
-    return render_template('index.html', original_path=original_path, processed_path=processed_path)
+    return render_template('upload.html')
 
-# Jalankan server Flask (lokal)
+# Konfigurasi untuk production
 if __name__ == "__main__":
-    print("\n🚀 Server Flask siap di http://localhost:5050")
-    print(f"🔧 Template folder: {TEMPLATE_FOLDER}")
-    print(f"📁 Static folder: {STATIC_FOLDER}\n")
-    app.run(debug=True, port=5050)
+    port = int(os.environ.get("PORT", 10000))  # Port default Render
+    app.run(host='0.0.0.0', port=port, debug=False)
