@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Image Processor</title>
+    <style>
+        /* Reset & basic */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7f9fc;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #004080;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input[type="file"] {
+            padding: 5px;
+        }
+        select {
+            padding: 8px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        select:focus {
+            outline: none;
+            border-color: #004080;
+            box-shadow: 0 0 5px #004080;
+        }
+        button {
+            background-color: #004080;
+            color: white;
+            padding: 10px 0;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #002d5c;
+        }
+
+        /* Hasil gambar */
+        .images {
+            margin-top: 30px;
+            width: 90%;
+            max-width: 700px;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .images > div {
+            flex: 1 1 300px;
+            text-align: center;
+        }
+        .images img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgb(0 0 0 / 0.15);
+            border: 1px solid #ddd;
+        }
+        .images h2 {
+            color: #004080;
+            margin-bottom: 10px;
+        }
+
+        /* Responsive */
+        @media(max-width: 640px) {
+            form {
+                width: 90%;
+            }
+            .images {
+                flex-direction: column;
+                align-items: center;
+            }
+            .images > div {
+                flex: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Gambar & Pilih Efek</h1>
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        <input type="file" name="image" accept="image/png, image/jpeg" required />
+        <select name="effect" required>
+            <option value="" disabled selected>Pilih efek...</option>
+            <option value="grayscale">Grayscale</option>
+            <option value="blur">Blur</option>
+            <option value="rotate">Rotate</option>
+            <option value="mirror">Mirror</option>
+            <option value="face_detect">Face Detect</option>
+        </select>
+        <button type="submit">Proses</button>
+    </form>
+
+    {% if original_path and processed_path %}
+    <div class="images">
+        <div>
+            <h2>Gambar Asli:</h2>
+            <img src="{{ original_path }}" alt="Gambar Asli" loading="lazy" />
+        </div>
+        <div>
+            <h2>Gambar Hasil:</h2>
+            <img src="{{ processed_path }}" alt="Gambar Hasil" loading="lazy" />
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
