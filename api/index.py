@@ -4,11 +4,18 @@ from werkzeug.utils import secure_filename
 import os
 import cv2
 
+# Lokasi dasar file ini
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Path template dan static (relatif terhadap file ini)
+TEMPLATE_FOLDER = os.path.join(BASE_DIR, '../templates')
+STATIC_FOLDER = os.path.join(BASE_DIR, '../static')
+
 # Inisialisasi Flask
-app = Flask(__name__, template_folder="../templates", static_folder="../static")
+app = Flask(__name__, template_folder=TEMPLATE_FOLDER, static_folder=STATIC_FOLDER)
 
 # Konfigurasi folder upload
-UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
+UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Buat folder uploads jika belum ada
@@ -22,14 +29,16 @@ def allowed_file(filename):
 
 # Fungsi deteksi wajah
 def deteksi_wajah(input_path, output_path):
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    # Gunakan path haarcascade lokal
+    cascade_path = os.path.join(BASE_DIR, 'haarcascade_frontalface_default.xml')
+    face_cascade = cv2.CascadeClassifier(cascade_path)
 
     if face_cascade.empty():
-        raise Exception("File haarcascade_frontalface_default.xml tidak ditemukan.")
+        raise Exception("❌ File haarcascade_frontalface_default.xml tidak ditemukan atau rusak.")
 
     img = cv2.imread(input_path)
     if img is None:
-        raise Exception(f"Gagal membaca gambar: {input_path}")
+        raise Exception(f"❌ Gagal membaca gambar: {input_path}")
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.1, 4)
@@ -78,6 +87,7 @@ def index():
                 else:
                     return "❌ Efek tidak dikenali", 400
 
+                # Konversi path untuk digunakan oleh HTML
                 original_path = url_for('static', filename=f'uploads/{filename}')
                 processed_path = url_for('static', filename=f'uploads/{processed_filename}')
 
@@ -90,7 +100,7 @@ def index():
 
     return render_template('index.html', original_path=original_path, processed_path=processed_path)
 
-# Jalankan server Flask di port aman
+# Jalankan server Flask (lokal)
 if __name__ == "__main__":
     print("🚀 Flask berjalan di http://127.0.0.1:5050")
     app.run(debug=True, port=5050)
