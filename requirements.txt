@@ -1,4 +1,6 @@
-flask
-Pillow
-opencv-python
-werkzeug
+flask==2.1.1
+pillow==9.2.0
+opencv-python==4.5.5.64
+numpy==1.22.0
+gunicorn==20.1.0  # Wajib untuk deploy
+opencv-python-headless==4.5.5.64  # Gunakan versi headless
